@@ -3,21 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "test:unit": "vue-cli-service test:unit"
+    "serve": "vue-cli-service serve --mode local",
+    "build-dev": "vue-cli-service build --mode development --nomaps",
+    "build-staging": "vue-cli-service build --mode staging",
+    "build-prod": "vue-cli-service build --mode production",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@types/qs": "^6.5.1",
+    "ant-design-vue": "^1.2.0",
+    "axios": "^0.18.0",
+    "lodash": "^4.17.10",
+    "countup.js": "^1.9.3",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",
+    "vue-echarts": "^3.1.2",
     "vue-property-decorator": "^7.0.0",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "vuex-router-sync": "^5.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.4",
+    "@types/node": "^10.12.15",
     "@vue/cli-plugin-babel": "^3.2.0",
     "@vue/cli-plugin-eslint": "^3.2.0",
     "@vue/cli-plugin-typescript": "^3.2.0",
@@ -30,6 +39,8 @@
     "chai": "^4.1.2",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
     "typescript": "^3.0.0",
     "vue-template-compiler": "^2.5.17"
   }
