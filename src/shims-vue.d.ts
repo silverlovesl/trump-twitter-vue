@@ -12,3 +12,8 @@ declare module 'vue-echarts/components/ECharts' {
   const ECharts: any;
   export default ECharts;
 }
+
+declare module 'vue-countup-v2' {
+  const ICountUp: any;
+  export default ICountUp;
+}

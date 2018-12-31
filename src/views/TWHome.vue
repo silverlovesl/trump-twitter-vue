@@ -1,21 +1,50 @@
 <template>
   <div class="tw-home">
-    <a-row :gutter="8">
-      <a-col :span="8">
-        <a-card title="年度別Twitter数" :loading="isLoading" :bodyStyle="cardBody">
-          <v-chart :options="annualTwitterCountChartOptions" :auto-resize="true"/>
-        </a-card>
-      </a-col>
-      <a-col :span="16">
-        <a-card title="月度別Twitter数" :loading="isLoading" :bodyStyle="cardBody">
-          <v-chart :options="monthlyTwitterCountChartOptions" :auto-resize="true"/>
+    <a-row :gutter="16" class="row-spacing">
+      <a-col :span="6">
+        <a-card :loading="isLoading" hoverable class="card-tag" :bodyStyle="cardTagBody">
+          <h4>2018年</h4>
+          <p v-if="annualTwitteTotal" class="annual-twitter-count">
+            <ICountUp :startVal="0" :endVal="annualTwitteTotal" :duration="2"/>件
+          </p>
+          <p v-if="annualTwitteAvg" class="annual-twitter-count-avg">
+            <span>一日あたり {{annualTwitteAvg}} 件</span>
+          </p>
+          <a-icon type="twitter"/>
         </a-card>
       </a-col>
     </a-row>
-    <a-row :gutter="4" style="margin-top:8px;">
-      <a-col :span="24">
+    <a-row :gutter="16">
+      <a-col :span="8">
+        <a-card hoverable :bodyStyle="{'height':'115px'}">
+          <img alt="trump" src="@/assets/image/trump-avator.png" slot="cover" style="height:300px;border-bottom:1px solid silver;">
+          <a-card-meta title="Donald J. Trump">
+            <template slot="description" style="height:60px">
+              <a target="_blank" href="https://twitter.com/realDonaldTrump">The 45th and current President of the United States.</a>
+            </template>
+          </a-card-meta>
+        </a-card>
+      </a-col>
+      <a-col :span="8" class="row-spacing">
+        <a-card title="年度別Twitter数" :loading="isLoading" :bodyStyle="cardBody">
+          <v-chart :options="annualTwitteStatChartOptions" :auto-resize="true"/>
+        </a-card>
+      </a-col>
+      <a-col :span="8">
+        <a-card title="トランプが何を言った" :loading="isLoading" :bodyStyle="cardBody">
+          <v-chart :options="wordCloudChartOptions" :auto-resize="true"/>
+        </a-card>
+      </a-col>
+    </a-row>
+    <a-row :gutter="16">
+      <a-col :span="12">
+        <a-card title="月度別Twitter数" :loading="isLoading" :bodyStyle="cardBody">
+          <v-chart :options="monthlyTwitterStatChartOptions" :auto-resize="true"/>
+        </a-card>
+      </a-col>
+      <a-col :span="12">
         <a-card title="時間別Twitter数" :loading="isLoading" :bodyStyle="cardBody">
-          <v-chart :options="hourlyTwitterCountChartOptions" :auto-resize="true"/>
+          <v-chart :options="hourlyTwitterStatChartOptions" :auto-resize="true"/>
         </a-card>
       </a-col>
     </a-row>
@@ -26,37 +55,47 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { StatisticType1, StatisticType2, StatisticType3 } from '@/models/statistic';
 import { mapGetters } from 'vuex';
+import ICountUp from 'vue-countup-v2';
+import { WordCloud } from '@/models/word-cloud';
+import { TWEnum } from '@/models/tw-enum';
+
+require('echarts-wordcloud');
 
 @Component({
   name: 'TWHome',
-  components: {},
+  components: {
+    ICountUp,
+  },
   computed: {
     ...mapGetters(['collapsed']),
   },
 })
 export default class TWHome extends Vue {
   public a: any = {};
-  public annualTwitterCountChartOptions: any = {};
-  public monthlyTwitterCountChartOptions: any = {};
-  public hourlyTwitterCountChartOptions: any = {};
+  public annualTwitteStatChartOptions: any = {};
+  public monthlyTwitterStatChartOptions: any = {};
+  public hourlyTwitterStatChartOptions: any = {};
+  public wordCloudChartOptions: any = {};
   public isLoading: boolean = true;
   public currentYear: number = new Date().getFullYear();
   mounted() {
     this.isLoading = true;
     this.$store.dispatch('home/fetchData');
+    this.$store.dispatch('home/fetchWordCloud', TWEnum.WordCategory.Noun);
     this.isLoading = true;
     setTimeout(() => {
-      this.initAnnualTwitterCountChartOptions();
-      this.initMonthTwitterCountChartOptions();
-      this.initHourTwitterCountChartOptions();
+      this.initannualTwitteStatChart();
+      this.initMonthTwitterCountChart();
+      this.initHourTwitterCountChart();
+      this.initWordCloud();
       this.isLoading = false;
     }, 1000);
   }
   /**
    * 年度別Twitter統計
    */
-  private initAnnualTwitterCountChartOptions() {
-    this.annualTwitterCountChartOptions = {
+  private initannualTwitteStatChart() {
+    this.annualTwitteStatChartOptions = {
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'line' },
@@ -66,11 +105,11 @@ export default class TWHome extends Vue {
         },
       },
       grid: { left: '5%', right: '10%', bottom: '5%', top: '10%', containLabel: true },
-      xAxis: { type: 'category', name: '年度', data: this.annualTwitterCount.map(d => d.year) },
+      xAxis: { type: 'category', name: '年度', data: this.annualTwitteStat.map(d => d.year) },
       yAxis: { type: 'value', name: '件数' },
       series: [
         {
-          data: this.annualTwitterCount.map(d => d.count),
+          data: this.annualTwitteStat.map(d => d.count),
           type: 'line',
           label: { offset: [-5, -5], show: true, position: 'bottom', color: '#C23431' },
         },
@@ -81,9 +120,9 @@ export default class TWHome extends Vue {
   /**
    * 月度別Twitter統計
    */
-  private initMonthTwitterCountChartOptions() {
-    const years = this.monthlyTwitterCount.map(d => d.yearWithUnit);
-    this.monthlyTwitterCountChartOptions = {
+  private initMonthTwitterCountChart() {
+    const years = this.monthlyTwitterStat.map(d => d.yearWithUnit);
+    this.monthlyTwitterStatChartOptions = {
       legend: {
         data: years,
         selected: { '2015年': false, '2016年': false },
@@ -95,7 +134,7 @@ export default class TWHome extends Vue {
         data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(d => `${d}月`),
       },
       yAxis: { type: 'value', name: '件数' },
-      series: this.monthlyTwitterCount.map(d => {
+      series: this.monthlyTwitterStat.map(d => {
         return {
           name: d.yearWithUnit,
           data: d.data.map(v => v.count),
@@ -113,31 +152,31 @@ export default class TWHome extends Vue {
   /**
    * 時間帯別Twitter統計
    */
-  private initHourTwitterCountChartOptions() {
-    console.log(this.twitterIcon);
+  private initHourTwitterCountChart() {
     let timeline = [];
     for (let i = 0; i <= 23; i++) {
-      timeline.push(`${i}:00`);
+      timeline.push(`${i}時`);
     }
-    this.hourlyTwitterCountChartOptions = {
+    this.hourlyTwitterStatChartOptions = {
       baseOption: {
+        title: { text: 'Trump一日最初の打ち合わせは午前11時より' },
         timeline: {
           axisType: 'category',
           autoPlay: true,
           playInterval: 5000,
-          data: this.hourlyTwitterCount.map(d => `${d.year}年`),
+          data: this.hourlyTwitterStat.map(d => `${d.year}年`),
           symbol: `image://${this.twitterIcon}`,
           symbolSize: 15,
         },
-        backgroundColor: '#1b1b1b',
-        grid: { left: '2%', right: '2%', bottom: '15%', top: '4%', containLabel: true },
+        // backgroundColor: '#1b1b1b',
+        grid: { left: '2%', right: '2%', bottom: '15%', top: '10%', containLabel: true },
         tooltip: { trigger: 'axis' },
         xAxis: [
           {
             type: 'category',
             data: timeline,
             nameTextStyle: { color: '#fff' },
-            axisLabel: { textStyle: { fontSize: 12, color: '#56617b' }, interval: 0 },
+            axisLabel: { textStyle: { fontSize: 12 }, interval: 0 },
             axisLine: { lineStyle: { color: '#56617b' } },
             splitLine: { show: true, lineStyle: { color: '#2e3547' } },
           },
@@ -156,7 +195,7 @@ export default class TWHome extends Vue {
         series: [
           {
             type: 'bar',
-            barWidth: '30%',
+            barWidth: '20%',
             itemStyle: {
               normal: {
                 color: function(params: any) {
@@ -202,26 +241,87 @@ export default class TWHome extends Vue {
           },
         ],
       },
-      options: this.hourlyTwitterCount.map(d => {
+      options: this.hourlyTwitterStat.map(d => {
         return { series: { data: d.data.map(v => v.count) } };
       }),
     };
   }
 
-  get annualTwitterCount(): StatisticType1[] {
-    return this.$store.state.home.anualTwitterCount as StatisticType1[];
+  /**
+   * WordCloud
+   */
+  private initWordCloud() {
+    var maskImage = new Image();
+
+    maskImage.onload = e => {
+      this.wordCloudChartOptions = {
+        series: [
+          {
+            type: 'wordCloud',
+            sizeRange: [10, 100],
+            rotationRange: [-90, 90],
+            rotationStep: 45,
+            gridSize: 1,
+            width: '100%',
+            height: '100%',
+            maskImage: e.target,
+            shape: 'pentagon',
+            textStyle: {
+              normal: {
+                color: function() {
+                  return 'rgb(' + [Math.round(Math.random() * 160), Math.round(Math.random() * 160), Math.round(Math.random() * 160)].join(',') + ')';
+                },
+              },
+            },
+            data: this.wordCloud.map(d => {
+              return { name: d.word, value: d.value };
+            }),
+          },
+        ],
+      };
+    };
+
+    maskImage.src = require('@/assets/image/word-cloud-frame.png');
   }
 
-  get monthlyTwitterCount(): StatisticType2[] {
-    return this.$store.state.home.monthlyTwitterCount as StatisticType2[];
+  get annualTwitteStat(): StatisticType1[] {
+    return this.$store.state.home.annualTwitterStat as StatisticType1[];
   }
 
-  get hourlyTwitterCount(): StatisticType3[] {
-    return this.$store.state.home.hourlyTwitterCount as StatisticType3[];
+  get monthlyTwitterStat(): StatisticType2[] {
+    return this.$store.state.home.monthlyTwitterStat as StatisticType2[];
+  }
+
+  get hourlyTwitterStat(): StatisticType3[] {
+    return this.$store.state.home.hourlyTwitterStat as StatisticType3[];
+  }
+
+  get wordCloud(): WordCloud[] {
+    return this.$store.state.home.wordCloud as WordCloud[];
+  }
+
+  get annualTwitteTotal(): number {
+    let returnV = 0;
+    const index = this.annualTwitteStat.findIndex(d => d.year === 2018);
+    if (index > -1) {
+      return this.annualTwitteStat[index].count;
+    }
+    return undefined;
+  }
+
+  get annualTwitteAvg(): number {
+    if (this.annualTwitteTotal) {
+      return Math.ceil(this.annualTwitteTotal / 365);
+    }
+    return undefined;
   }
 
   get cardBody() {
     return { height: '360px', padding: '12px' };
+  }
+
+  get cardTagBody() {
+    return { height: '360px', padding: '8px' };
   }
 
   get twitterIcon(): string {
@@ -230,5 +330,43 @@ export default class TWHome extends Vue {
 }
 </script>
 <style lang="scss">
+.row-spacing {
+  margin-bottom: 16px;
+}
+
+.card-tag {
+  height: 130px;
+  padding-left: 10px;
+  position: relative;
+  background: linear-gradient(240deg, #00aadf 0%, #0071bc 100%);
+  color: white;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 4px;
+    color: white;
+  }
+  p {
+    margin: 2px;
+  }
+  .annual-twitter-count {
+    font-size: 2.4rem;
+    &-avg {
+      font-size: 0.8rem;
+    }
+  }
+
+  overflow: hidden;
+  i {
+    color: #81c8e9;
+    position: absolute;
+    font-size: 4rem;
+    right: 5px;
+    bottom: -5px;
+  }
+}
 </style>
 
