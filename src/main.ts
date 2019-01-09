@@ -20,6 +20,7 @@ import 'echarts/lib/component/markPoint';
 import 'echarts/lib/component/timeline';
 import 'echarts/lib/theme/dark';
 import 'echarts/lib/util/symbol';
+require('echarts-wordcloud');
 
 Vue.component('v-chart', ECharts);
 Vue.use(antD);

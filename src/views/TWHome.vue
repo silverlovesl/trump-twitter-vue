@@ -4,11 +4,11 @@
       <a-col :span="6">
         <a-card :loading="isLoading" hoverable class="card-tag" :bodyStyle="cardTagBody">
           <h4>2018年</h4>
-          <p v-if="annualTwitteTotal" class="annual-twitter-count">
-            <ICountUp :startVal="0" :endVal="annualTwitteTotal" :duration="2"/>件
+          <p v-if="annualTwitterTotal" class="annual-twitter-count">
+            <ICountUp :startVal="0" :endVal="annualTwitterTotal" :duration="2"/>件
           </p>
-          <p v-if="annualTwitteAvg" class="annual-twitter-count-avg">
-            <span>一日あたり {{annualTwitteAvg}} 件</span>
+          <p v-if="annualTwitterAvg" class="annual-twitter-count-avg">
+            <span>一日あたり {{annualTwitterAvg}} 件</span>
           </p>
           <a-icon type="twitter"/>
         </a-card>
@@ -53,22 +53,21 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
+import { Action, Getter, State, namespace } from 'vuex-class';
 import { StatisticType1, StatisticType2, StatisticType3 } from '@/models/statistic';
-import { mapGetters } from 'vuex';
+import { mapGetters, ActionContext } from 'vuex';
 import ICountUp from 'vue-countup-v2';
 import { WordCloud } from '@/models/word-cloud';
 import { TWEnum } from '@/models/tw-enum';
 
-require('echarts-wordcloud');
+const homeModule = namespace('home');
 
 @Component({
   name: 'TWHome',
   components: {
     ICountUp,
   },
-  computed: {
-    ...mapGetters(['collapsed']),
-  },
+  computed: {},
 })
 export default class TWHome extends Vue {
   public a: any = {};
@@ -78,13 +77,22 @@ export default class TWHome extends Vue {
   public wordCloudChartOptions: any = {};
   public isLoading: boolean = true;
   public currentYear: number = new Date().getFullYear();
-  mounted() {
+  @State(state => state.home.annualTwitterStat) annualTwitterStat: StatisticType1[];
+  @State(state => state.home.monthlyTwitterStat) monthlyTwitterStat: StatisticType2[];
+  @State(state => state.home.hourlyTwitterStat) hourlyTwitterStat: StatisticType3[];
+  @Getter('collapsed') collapsed: boolean;
+  @Action('home/fetchData') featchData: () => Promise<void>;
+  @Action('home/fetchWordCloud') fetchWordCloud: (category: TWEnum.WordCategory) => Promise<void>;
+
+  async mounted() {
+    console.log(homeModule);
     this.isLoading = true;
-    this.$store.dispatch('home/fetchData');
-    this.$store.dispatch('home/fetchWordCloud', TWEnum.WordCategory.Noun);
+    await this.featchData();
+    await this.fetchWordCloud(TWEnum.WordCategory.Noun);
     this.isLoading = true;
+
     setTimeout(() => {
-      this.initannualTwitteStatChart();
+      this.initannualTwitterStatChart();
       this.initMonthTwitterCountChart();
       this.initHourTwitterCountChart();
       this.initWordCloud();
@@ -94,7 +102,7 @@ export default class TWHome extends Vue {
   /**
    * 年度別Twitter統計
    */
-  private initannualTwitteStatChart() {
+  private initannualTwitterStatChart() {
     this.annualTwitteStatChartOptions = {
       tooltip: {
         trigger: 'axis',
@@ -105,11 +113,11 @@ export default class TWHome extends Vue {
         },
       },
       grid: { left: '5%', right: '10%', bottom: '5%', top: '10%', containLabel: true },
-      xAxis: { type: 'category', name: '年度', data: this.annualTwitteStat.map(d => d.year) },
+      xAxis: { type: 'category', name: '年度', data: this.annualTwitterStat.map(d => d.year) },
       yAxis: { type: 'value', name: '件数' },
       series: [
         {
-          data: this.annualTwitteStat.map(d => d.count),
+          data: this.annualTwitterStat.map(d => d.count),
           type: 'line',
           label: { offset: [-5, -5], show: true, position: 'bottom', color: '#C23431' },
         },
@@ -284,34 +292,35 @@ export default class TWHome extends Vue {
     maskImage.src = require('@/assets/image/word-cloud-frame.png');
   }
 
-  get annualTwitteStat(): StatisticType1[] {
-    return this.$store.state.home.annualTwitterStat as StatisticType1[];
-  }
+  // get annualTwitteStat(): StatisticType1[] {
+  //   return this.$store.state.home.annualTwitterStat as StatisticType1[];
+  // }
 
-  get monthlyTwitterStat(): StatisticType2[] {
-    return this.$store.state.home.monthlyTwitterStat as StatisticType2[];
-  }
+  // get monthlyTwitterStat(): StatisticType2[] {
+  //   return this.$store.state.home.monthlyTwitterStat as StatisticType2[];
+  // }
 
-  get hourlyTwitterStat(): StatisticType3[] {
-    return this.$store.state.home.hourlyTwitterStat as StatisticType3[];
-  }
+  // get hourlyTwitterStat(): StatisticType3[] {
+  //   return this.$store.state.home.hourlyTwitterStat as StatisticType3[];
+  // }
 
   get wordCloud(): WordCloud[] {
     return this.$store.state.home.wordCloud as WordCloud[];
   }
 
-  get annualTwitteTotal(): number {
-    let returnV = 0;
-    const index = this.annualTwitteStat.findIndex(d => d.year === 2018);
-    if (index > -1) {
-      return this.annualTwitteStat[index].count;
+  get annualTwitterTotal(): number {
+    if (this.annualTwitterStat) {
+      const index = this.annualTwitterStat.findIndex(d => d.year === 2018);
+      if (index > -1) {
+        return this.annualTwitterStat[index].count;
+      }
     }
     return undefined;
   }
 
-  get annualTwitteAvg(): number {
-    if (this.annualTwitteTotal) {
-      return Math.ceil(this.annualTwitteTotal / 365);
+  get annualTwitterAvg(): number {
+    if (this.annualTwitterTotal) {
+      return Math.ceil(this.annualTwitterTotal / 365);
     }
     return undefined;
   }

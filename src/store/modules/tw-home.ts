@@ -39,16 +39,16 @@ const mutations: MutationTree<State> = {
 const actions: ActionTree<State, RootState> = {
   async fetchData(ctx: ActionContext<State, RootState>) {
     // var _annualTwitterStat = require('@/assets/data/stat-type1.json').data.map((d: any) => new StatisticType1().deserialize(d));
-    var _hourlyTwitterStat = await statService.getHourlyStatistic();
-    var _monthlyTwitterStat = await statService.getMonthlyStatistic();
-    var _annualTwitterStat = await statService.getAnnualStatistic();
+    let _hourlyTwitterStat = await statService.getHourlyStatistic();
+    let _monthlyTwitterStat = await statService.getMonthlyStatistic();
+    let _annualTwitterStat = await statService.getAnnualStatistic();
     ctx.commit('annualTwitterStat', _annualTwitterStat);
     ctx.commit('monthlyTwitterStat', _monthlyTwitterStat);
     ctx.commit('hourlyTwitterStat', _hourlyTwitterStat);
   },
 
   async fetchWordCloud(ctx: ActionContext<State, RootState>, category: TWEnum.WordCategory) {
-    var _wordCloud = await statService.getWordCloud(category);
+    let _wordCloud = await statService.getWordCloud(category);
     ctx.commit('wordCloud', _wordCloud);
   },
 };
