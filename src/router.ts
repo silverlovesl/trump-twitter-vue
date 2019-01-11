@@ -16,5 +16,15 @@ export default new Router({
       name: 'home',
       component: loadView('TWHome'),
     },
+    {
+      path: '/home',
+      name: 'home',
+      component: loadView('TWHome'),
+    },
+    {
+      path: '/emotion',
+      name: 'emotion',
+      component: loadView('TWEmotion'),
+    },
   ],
 });

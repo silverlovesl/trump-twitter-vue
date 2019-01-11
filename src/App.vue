@@ -5,14 +5,14 @@
         <div class="logo">
           <img src="@/assets/image/logo_small.png">
         </div>
-        <a-menu theme="dark" mode="inline" :defaultSelectedKeys="['1']">
-          <a-menu-item key="1">
+        <a-menu theme="dark" mode="inline" :defaultSelectedKeys="['1']" @click="handleMenuSelected">
+          <a-menu-item key="home">
             <a-icon type="bar-chart"/>
             <span>Twitter every day</span>
           </a-menu-item>
-          <a-menu-item key="2">
-            <a-icon type="cloud"/>
-            <span>Your are fired</span>
+          <a-menu-item key="emotion">
+            <a-icon type="frown"/>
+            <span>Emotion</span>
           </a-menu-item>
           <a-menu-item key="3">
             <a-icon type="pie-chart"/>
@@ -40,6 +40,10 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   computed: {},
 })
 export default class TWApp extends Vue {
+  handleMenuSelected(obj: any) {
+    this.$router.push(`/${obj.key}`);
+  }
+
   get collapsed(): boolean {
     return this.$store.state.collapsed;
   }

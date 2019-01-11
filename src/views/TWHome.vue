@@ -53,14 +53,14 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
+import { mixins } from 'vue-class-component';
 import { Action, Getter, State, namespace } from 'vuex-class';
 import { StatisticType1, StatisticType2, StatisticType3 } from '@/models/statistic';
 import { mapGetters, ActionContext } from 'vuex';
 import ICountUp from 'vue-countup-v2';
 import { WordCloud } from '@/models/word-cloud';
 import { TWEnum } from '@/models/tw-enum';
-
-const homeModule = namespace('home');
+import { UIMixin } from '@/mixins/UIMixin';
 
 @Component({
   name: 'TWHome',
@@ -69,8 +69,7 @@ const homeModule = namespace('home');
   },
   computed: {},
 })
-export default class TWHome extends Vue {
-  public a: any = {};
+export default class TWHome extends mixins(UIMixin) {
   public annualTwitteStatChartOptions: any = {};
   public monthlyTwitterStatChartOptions: any = {};
   public hourlyTwitterStatChartOptions: any = {};
@@ -85,11 +84,9 @@ export default class TWHome extends Vue {
   @Action('home/fetchWordCloud') fetchWordCloud: (category: TWEnum.WordCategory) => Promise<void>;
 
   async mounted() {
-    console.log(homeModule);
     this.isLoading = true;
     await this.featchData();
     await this.fetchWordCloud(TWEnum.WordCategory.Noun);
-    this.isLoading = true;
 
     setTimeout(() => {
       this.initannualTwitterStatChart();
@@ -292,18 +289,6 @@ export default class TWHome extends Vue {
     maskImage.src = require('@/assets/image/word-cloud-frame.png');
   }
 
-  // get annualTwitteStat(): StatisticType1[] {
-  //   return this.$store.state.home.annualTwitterStat as StatisticType1[];
-  // }
-
-  // get monthlyTwitterStat(): StatisticType2[] {
-  //   return this.$store.state.home.monthlyTwitterStat as StatisticType2[];
-  // }
-
-  // get hourlyTwitterStat(): StatisticType3[] {
-  //   return this.$store.state.home.hourlyTwitterStat as StatisticType3[];
-  // }
-
   get wordCloud(): WordCloud[] {
     return this.$store.state.home.wordCloud as WordCloud[];
   }
@@ -325,24 +310,12 @@ export default class TWHome extends Vue {
     return undefined;
   }
 
-  get cardBody() {
-    return { height: '360px', padding: '12px' };
-  }
-
-  get cardTagBody() {
-    return { height: '360px', padding: '8px' };
-  }
-
   get twitterIcon(): string {
     return require('@/assets/image/twitter.svg');
   }
 }
 </script>
 <style lang="scss">
-.row-spacing {
-  margin-bottom: 16px;
-}
-
 .card-tag {
   height: 130px;
   padding-left: 10px;

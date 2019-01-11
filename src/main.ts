@@ -10,6 +10,7 @@ Vue.config.productionTip = false;
 //Echart===============================================================
 import ECharts from 'vue-echarts/components/ECharts';
 import 'echarts/lib/chart/bar';
+import 'echarts/lib/chart/gauge';
 import 'echarts/lib/chart/custom';
 import 'echarts/lib/chart/line';
 import 'echarts/lib/component/title';

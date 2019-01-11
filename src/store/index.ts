@@ -1,7 +1,7 @@
 import Vue from 'vue';
-import Vuex, { ActionContext, ActionTree, GetterTree, MutationTree } from 'vuex';
-import router from '@/router';
+import Vuex, { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { TWHomeModule } from './modules/tw-home';
+import { TWEmotionModule } from './modules/tw-emotion';
 
 Vue.use(Vuex);
 
@@ -46,5 +46,6 @@ export const store = new Vuex.Store<RootState>({
   actions,
   modules: {
     home: TWHomeModule,
+    emotion: TWEmotionModule,
   },
 });
