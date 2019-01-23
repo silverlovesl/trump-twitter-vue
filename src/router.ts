@@ -26,5 +26,10 @@ export default new Router({
       name: 'emotion',
       component: loadView('TWEmotion'),
     },
+    {
+      path: '/performance',
+      name: 'performance',
+      component: loadView('TWPerformance'),
+    },
   ],
 });

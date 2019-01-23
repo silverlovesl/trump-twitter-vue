@@ -16,7 +16,7 @@
           </a-menu-item>
           <a-menu-item key="3">
             <a-icon type="pie-chart"/>
-            <span>nav 1</span>
+            <span>Performance</span>
           </a-menu-item>
         </a-menu>
       </a-layout-sider>

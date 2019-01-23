@@ -14,7 +14,7 @@
         </a-card>
       </a-col>
     </a-row>
-    <a-row :gutter="16">
+    <a-row :gtter="16">
       <a-col :span="8">
         <a-card hoverable :bodyStyle="{'height':'115px'}">
           <img alt="trump" src="@/assets/image/trump-avator.png" slot="cover" style="height:300px;border-bottom:1px solid silver;">
